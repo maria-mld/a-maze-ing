@@ -2,6 +2,7 @@ import sys
 from MazeGenerator.parser import Parser
 from MazeGenerator.maze_engine import MazeEngine
 
+
 def print_menu() -> None:
     print("\n--- Maze Generator Menu ---")
     print("g - Generate new maze")
@@ -9,6 +10,7 @@ def print_menu() -> None:
     print("t - Next theme")
     print("q - Quit")
     print("---------------------------")
+
 
 def main() -> None:
     if len(sys.argv) != 2:
@@ -20,19 +22,19 @@ def main() -> None:
         # Инициализация
         parser = Parser(config_path)
         engine = MazeEngine(*parser.get_args())
-        
+
         # Первая генерация
         engine.generate()
         engine.solve()
         engine.save()
 
         show_path = True
-        
+
         # Игровой цикл
         while True:
             # 1. Очистка (один раз в начале)
             print("\033[H\033[J", end="")
-            
+
             # 2. Вывод состояния
             print(f"Current Theme: {engine.renderer.get_current_theme_name()}")
             print(f"Output File: {engine.output_file} (Autosaved)")
@@ -61,6 +63,6 @@ def main() -> None:
     except Exception as e:
         print(f"Critical Error: {e}")
 
+
 if __name__ == "__main__":
     main()
-
