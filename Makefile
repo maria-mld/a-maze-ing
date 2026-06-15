@@ -1,6 +1,6 @@
 .PHONY: install run debug clean lint lint-strict
 
-# Имя основного скрипта
+# Main script name
 MAIN_SCRIPT = a_maze_ing.py
 CONFIG_FILE = config.txt
 

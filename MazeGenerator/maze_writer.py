@@ -7,7 +7,7 @@ class MazeWriter:
 
     def write(self, grid: List[List[int]], entry: Tuple[int, int],
               exit_coords: Tuple[int, int], path: str) -> None:
-        """Сохранение лабиринта в файл[cite: 9]."""
+        """Save the maze to a file."""
         with open(self.filename, "w") as f:
             for row in grid:
                 f.write("".join(f"{cell:X}" for cell in row) + "\n")

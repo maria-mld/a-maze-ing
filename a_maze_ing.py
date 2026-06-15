@@ -19,34 +19,26 @@ def main() -> None:
 
     config_path = sys.argv[1]
     try:
-        # Инициализация
         parser = Parser(config_path)
         engine = MazeEngine(*parser.get_args())
 
-        # Первая генерация
         engine.generate()
         engine.solve()
         engine.save()
 
         show_path = True
 
-        # Игровой цикл
         while True:
-            # 1. Очистка (один раз в начале)
             print("\033[H\033[J", end="")
 
-            # 2. Вывод состояния
             print(f"Current Theme: {engine.renderer.get_current_theme_name()}")
             print(f"Output File: {engine.output_file} (Autosaved)")
 
-            # 3. Отрисовка лабиринта
             engine.show(with_path=show_path)
             print_menu()
 
-            # 4. ЖДЕМ ввода (программа встанет здесь)
             choice = input("Select action: ").lower().strip()
 
-            # 5. Обработка команд
             if choice == "g":
                 engine.seed += 1
                 engine.generate()

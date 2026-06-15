@@ -35,7 +35,7 @@ class Parser:
             width = int(self.config["WIDTH"])
             height = int(self.config["HEIGHT"])
 
-            # Парсинг координат (ENTRY=0,0)
+            # Parse coordinates (ENTRY=0,0)
             entry_parts = list(map(int, self.config["ENTRY"].split(",")))
             entry = (entry_parts[0], entry_parts[1])
 

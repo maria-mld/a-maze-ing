@@ -18,7 +18,7 @@ class MazeEngine:
         self.output_file = output_file
         self.seed = seed
 
-        # Выбираем стратегию в зависимости от флага perfect
+        # Choose the generation strategy based on the perfect flag
         if perfect:
             self.generator = PerfectMazeGen()
         else:
@@ -44,7 +44,6 @@ class MazeEngine:
 
     def show(self, with_path: bool) -> None:
         """Visualizes the maze via the new renderer."""
-        # Передаем все необходимые аргументы
         self.renderer.render(
             grid=self.grid,
             start=self.entry,
