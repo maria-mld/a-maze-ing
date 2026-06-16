@@ -3,6 +3,8 @@ from pathlib import Path
 
 
 class Parser:
+    """Reads and validates a key-value maze configuration file."""
+
     def __init__(self, file_path: str) -> None:
         self.file_path = Path(file_path)
         self.config: Dict[str, str] = {}
@@ -35,12 +37,8 @@ class Parser:
             width = int(self.config["WIDTH"])
             height = int(self.config["HEIGHT"])
 
-            # Parse coordinates (ENTRY=0,0)
-            entry_parts = list(map(int, self.config["ENTRY"].split(",")))
-            entry = (entry_parts[0], entry_parts[1])
-
-            exit_parts = list(map(int, self.config["EXIT"].split(",")))
-            exit_coords = (exit_parts[0], exit_parts[1])
+            entry = self._parse_coordinate("ENTRY")
+            exit_coords = self._parse_coordinate("EXIT")
 
             output_file = self.config["OUTPUT_FILE"]
             perfect = self.config.get("PERFECT", "True").lower() == "true"
@@ -53,3 +51,10 @@ class Parser:
             raise ValueError(f"Missing mandatory key in config: {e}")
         except ValueError as e:
             raise ValueError(f"Invalid parameter format: {e}")
+
+    def _parse_coordinate(self, key: str) -> Tuple[int, int]:
+        """Parse a coordinate value written as x,y."""
+        parts = self.config[key].split(",")
+        if len(parts) != 2:
+            raise ValueError(f"{key} must contain exactly two values: x,y")
+        return int(parts[0]), int(parts[1])

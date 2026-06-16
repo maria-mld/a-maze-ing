@@ -1,10 +1,15 @@
-
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mazegen"
 version = "1.0.0"
 description = "A reusable maze generator"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["MazeGenerator*"]
+
+[tool.mypy]
+exclude = "^(venv|\\.venv|build|dist|mazegen\\.egg-info)/"

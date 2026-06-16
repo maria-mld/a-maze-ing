@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Set, Tuple
 import random
+
+Coordinate = Tuple[int, int]
 
 
 class MazeStrategy(ABC):
@@ -11,24 +13,40 @@ class MazeStrategy(ABC):
 
 
 class PerfectMazeGen(MazeStrategy):
+    PATTERN_42: Tuple[str, ...] = (
+        "# # ###",
+        "# #   #",
+        "### ###",
+        "  # #  ",
+        "  # ###",
+    )
+
     def generate(self, width: int, height: int, seed: int) -> List[List[int]]:
         random.seed(seed)
         # 15 = 1|2|4|8 (all walls are closed)
         grid = [[15 for _ in range(width)] for _ in range(height)]
+        blocked = self.get_pattern_cells(width, height)
 
         # List all possible inner walls (edges)
-        edges = []
+        edges: List[Tuple[Coordinate, Coordinate, str]] = []
         for y in range(height):
             for x in range(width):
-                if x < width - 1:
+                if (x, y) in blocked:
+                    continue
+                if x < width - 1 and (x + 1, y) not in blocked:
                     edges.append(((x, y), (x + 1, y), 'E'))  # Right wall
-                if y < height - 1:
+                if y < height - 1 and (x, y + 1) not in blocked:
                     edges.append(((x, y), (x, y + 1), 'S'))  # Bottom wall
 
         random.shuffle(edges)
-        parent = {(x, y): (x, y) for x in range(width) for y in range(height)}
+        parent = {
+            (x, y): (x, y)
+            for x in range(width)
+            for y in range(height)
+            if (x, y) not in blocked
+        }
 
-        def find(i: Tuple[int, int]) -> Tuple[int, int]:
+        def find(i: Coordinate) -> Coordinate:
             if parent[i] == i:
                 return i
             parent[i] = find(parent[i])
@@ -42,9 +60,30 @@ class PerfectMazeGen(MazeStrategy):
 
         return grid
 
+    @classmethod
+    def get_pattern_cells(cls, width: int, height: int,
+                          warn: bool = True) -> Set[Coordinate]:
+        """Return centered cells that form a closed-cell 42 pattern."""
+        pattern_height = len(cls.PATTERN_42)
+        pattern_width = len(cls.PATTERN_42[0])
+        if width < pattern_width + 2 or height < pattern_height + 2:
+            if warn:
+                print("Error: maze is too small to contain the 42 pattern; "
+                      "pattern omitted.")
+            return set()
+
+        left = (width - pattern_width) // 2
+        top = (height - pattern_height) // 2
+        cells: Set[Coordinate] = set()
+        for row_index, row in enumerate(cls.PATTERN_42):
+            for column_index, char in enumerate(row):
+                if char == "#":
+                    cells.add((left + column_index, top + row_index))
+        return cells
+
     def _remove_wall(self, grid: List[List[int]],
-                     u: Tuple[int, int],
-                     v: Tuple[int, int],
+                     u: Coordinate,
+                     v: Coordinate,
                      direction: str) -> None:
         ux, uy = u
         vx, vy = v
@@ -59,8 +98,22 @@ class PerfectMazeGen(MazeStrategy):
 class NonPerfectMazeGen(PerfectMazeGen):
     def generate(self, width: int, height: int, seed: int) -> List[List[int]]:
         grid = super().generate(width, height, seed)
-        # Add random openings to create loops
-        for _ in range(width):
-            x, y = random.randint(0, width-1), random.randint(0, height-1)
-            grid[y][x] = 0  # Open a random cell
+        blocked = self.get_pattern_cells(width, height, warn=False)
+
+        extra_edges: List[Tuple[Coordinate, Coordinate, str]] = []
+        for y in range(height):
+            for x in range(width):
+                if (x, y) in blocked:
+                    continue
+                if (x < width - 1 and (x + 1, y) not in blocked
+                        and (grid[y][x] & 2)):
+                    extra_edges.append(((x, y), (x + 1, y), 'E'))
+                if (y < height - 1 and (x, y + 1) not in blocked
+                        and (grid[y][x] & 4)):
+                    extra_edges.append(((x, y), (x, y + 1), 'S'))
+
+        random.shuffle(extra_edges)
+        for u, v, direction in extra_edges[:width]:
+            self._remove_wall(grid, u, v, direction)
+
         return grid

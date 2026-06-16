@@ -25,12 +25,12 @@ class MazeRenderer:
     EXIT = "\033[96m"
 
     THEMES: List[Theme] = [
-        Theme("Classic", "\033[97m", "\033[91m"),
-        Theme("Hell", "\033[91m", "\033[93m"),
-        Theme("Forest", "\033[92m", "\033[95m"),
-        Theme("Cyber", "\033[93m", "\033[94m"),
-        Theme("Deep Sea", "\033[94m", "\033[96m"),
-        Theme("Neon", "\033[95m", "\033[92m"),
+        Theme("Moonlight", "\033[37m", "\033[96m"),
+        Theme("Rose Garden", "\033[95m", "\033[92m"),
+        Theme("Amber Cave", "\033[33m", "\033[91m"),
+        Theme("Ice Lake", "\033[36m", "\033[94m"),
+        Theme("Lime Wire", "\033[92m", "\033[93m"),
+        Theme("Soft Shadow", "\033[90m", "\033[97m"),
     ]
 
     OPENINGS: Dict[int, Tuple[int, int]] = {
@@ -89,9 +89,16 @@ class MazeRenderer:
         wall = self._color(self.WALL, theme.wall)
         canvas_width = (width * 2 + 1) * self.CELL_WIDTH
         canvas_height = height * 2 + 1
-        return [[wall for _ in range(canvas_width)] for _ in range(canvas_height)]
+        return [
+            [wall for _ in range(canvas_width)]
+            for _ in range(canvas_height)
+        ]
 
-    def _draw_passages(self, canvas: List[List[str]], grid: List[List[int]]) -> None:
+    def _draw_passages(
+        self,
+        canvas: List[List[str]],
+        grid: List[List[int]],
+    ) -> None:
         for y, row in enumerate(grid):
             for x, cell in enumerate(row):
                 point = self._cell_to_canvas((x, y))
@@ -103,7 +110,11 @@ class MazeRenderer:
 
                 for wall, step in self.OPENINGS.items():
                     if not (cell & wall):
-                        self._paint(canvas, self._offset(point, step), self.EMPTY)
+                        self._paint(
+                            canvas,
+                            self._offset(point, step),
+                            self.EMPTY,
+                        )
 
     def _draw_path(
         self,
@@ -117,11 +128,20 @@ class MazeRenderer:
 
         for direction in path:
             step = self.PATH_STEPS[direction]
-            self._paint(canvas, self._offset(point, step), self.PATH, theme.path)
+            self._paint(
+                canvas,
+                self._offset(point, step),
+                self.PATH,
+                theme.path,
+            )
             point = self._offset(point, (step[0] * 2, step[1] * 2))
             self._paint(canvas, point, self.PATH, theme.path)
 
-    def _walk_path(self, start: Tuple[int, int], path: str) -> Tuple[int, int]:
+    def _walk_path(
+        self,
+        start: Tuple[int, int],
+        path: str,
+    ) -> Tuple[int, int]:
         point = self._cell_to_canvas(start)
         for direction in path:
             step = self.PATH_STEPS[direction]
