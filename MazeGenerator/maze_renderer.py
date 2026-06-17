@@ -1,9 +1,13 @@
+"""Terminal renderer for generated mazes."""
+
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 
 @dataclass(frozen=True)
 class Theme:
+    """Store ANSI colors used to draw a maze theme."""
+
     name: str
     wall: str
     path: str
@@ -48,13 +52,20 @@ class MazeRenderer:
     }
 
     def __init__(self) -> None:
+        """Initialize the renderer with the first available theme."""
         self.theme_index = 0
 
     def next_theme(self) -> str:
+        """Switch to the next color theme.
+
+        Returns:
+            The name of the newly selected theme.
+        """
         self.theme_index = (self.theme_index + 1) % len(self.THEMES)
         return self.get_current_theme_name()
 
     def get_current_theme_name(self) -> str:
+        """Return the name of the active color theme."""
         return self.THEMES[self.theme_index].name
 
     def render(
@@ -65,6 +76,16 @@ class MazeRenderer:
         end_coords: Optional[Tuple[int, int]] = None,
         show_path: bool = False,
     ) -> None:
+        """Draw a maze in the terminal.
+
+        Args:
+            grid: Maze grid encoded as wall bit masks.
+            start: Entry coordinate.
+            path_str: Solution path represented with direction letters.
+            end_coords: Exit coordinate. If omitted, it is inferred by walking
+            ``path_str`` from ``start``.
+            show_path: Whether to draw the solution path.
+        """
         if not grid or not grid[0]:
             return
 
@@ -85,6 +106,15 @@ class MazeRenderer:
         self._print(canvas)
 
     def _make_canvas(self, width: int, height: int) -> List[List[str]]:
+        """Create a wall-filled terminal canvas for a maze size.
+
+        Args:
+            width: Maze width in cells.
+            height: Maze height in cells.
+
+        Returns:
+            A two-dimensional character canvas initialized with wall symbols.
+        """
         theme = self.THEMES[self.theme_index]
         wall = self._color(self.WALL, theme.wall)
         canvas_width = (width * 2 + 1) * self.CELL_WIDTH
@@ -99,6 +129,12 @@ class MazeRenderer:
         canvas: List[List[str]],
         grid: List[List[int]],
     ) -> None:
+        """Carve visible passages into the terminal canvas.
+
+        Args:
+            canvas: Character canvas to mutate.
+            grid: Maze grid encoded as wall bit masks.
+        """
         for y, row in enumerate(grid):
             for x, cell in enumerate(row):
                 point = self._cell_to_canvas((x, y))
@@ -122,6 +158,13 @@ class MazeRenderer:
         start: Tuple[int, int],
         path: str,
     ) -> None:
+        """Draw a solution path on the terminal canvas.
+
+        Args:
+            canvas: Character canvas to mutate.
+            start: Coordinate where the path begins.
+            path: Direction string using ``N``, ``E``, ``S``, and ``W``.
+        """
         theme = self.THEMES[self.theme_index]
         point = self._cell_to_canvas(start)
         self._paint(canvas, point, self.PATH, theme.path)
@@ -142,6 +185,15 @@ class MazeRenderer:
         start: Tuple[int, int],
         path: str,
     ) -> Tuple[int, int]:
+        """Return the final canvas point reached by a path.
+
+        Args:
+            start: Maze coordinate where the path begins.
+            path: Direction string to follow.
+
+        Returns:
+            Canvas coordinate reached after walking the path.
+        """
         point = self._cell_to_canvas(start)
         for direction in path:
             step = self.PATH_STEPS[direction]
@@ -149,6 +201,7 @@ class MazeRenderer:
         return point
 
     def _cell_to_canvas(self, cell: Tuple[int, int]) -> Tuple[int, int]:
+        """Convert a maze cell coordinate to a canvas coordinate."""
         x, y = cell
         return x * 2 + 1, y * 2 + 1
 
@@ -157,6 +210,7 @@ class MazeRenderer:
         point: Tuple[int, int],
         step: Tuple[int, int],
     ) -> Tuple[int, int]:
+        """Return a point moved by a step vector."""
         return point[0] + step[0], point[1] + step[1]
 
     def _paint(
@@ -166,14 +220,24 @@ class MazeRenderer:
         char: str,
         color: str = "",
     ) -> None:
+        """Paint a character on the canvas with optional ANSI color.
+
+        Args:
+            canvas: Character canvas to mutate.
+            point: Canvas coordinate to paint.
+            char: Character to place on the canvas.
+            color: Optional ANSI color escape sequence.
+        """
         x, y = point
         value = self._color(char, color) if color else char
         for stretch in range(self.CELL_WIDTH):
             canvas[y][x * self.CELL_WIDTH + stretch] = value
 
     def _color(self, char: str, color: str) -> str:
+        """Wrap a character in an ANSI color escape sequence."""
         return f"{color}{char}{self.RESET}"
 
     def _print(self, canvas: List[List[str]]) -> None:
+        """Print a character canvas to the terminal."""
         for row in canvas:
             print("".join(row))

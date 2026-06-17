@@ -1,3 +1,5 @@
+"""Configuration parser for the A-Maze-ing project."""
+
 from typing import Dict, Tuple
 from pathlib import Path
 
@@ -6,11 +8,29 @@ class Parser:
     """Reads and validates a key-value maze configuration file."""
 
     def __init__(self, file_path: str) -> None:
+        """Initialize the parser and load the configuration file.
+
+        Args:
+            file_path: Path to the configuration file.
+
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+            ValueError: If a non-empty, non-comment line has invalid syntax.
+        """
         self.file_path = Path(file_path)
         self.config: Dict[str, str] = {}
         self._load_config()
 
     def _load_config(self) -> None:
+        """Load key-value pairs from the configuration file.
+
+        Lines starting with ``#`` and empty lines are ignored. Keys are stored
+        in uppercase to make configuration names case-insensitive.
+
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+            ValueError: If a relevant line does not contain ``=``.
+        """
         if not self.file_path.is_file():
             raise FileNotFoundError(f"Config file not found: {self.file_path}")
 
@@ -32,7 +52,16 @@ class Parser:
                                 Tuple[int, int],
                                 Tuple[int, int],
                                 str, bool, int]:
-        """Validates and returns configuration parameters."""
+        """Validate and return configuration parameters.
+
+        Returns:
+            A tuple containing width, height, entry coordinate, exit
+            coordinate, output file, perfect flag, and seed.
+
+        Raises:
+            ValueError: If a mandatory key is missing or a value cannot be
+            converted to the expected type.
+        """
         try:
             width = int(self.config["WIDTH"])
             height = int(self.config["HEIGHT"])
@@ -53,7 +82,18 @@ class Parser:
             raise ValueError(f"Invalid parameter format: {e}")
 
     def _parse_coordinate(self, key: str) -> Tuple[int, int]:
-        """Parse a coordinate value written as x,y."""
+        """Parse a coordinate value written as ``x,y``.
+
+        Args:
+            key: Configuration key that stores the coordinate.
+
+        Returns:
+            A coordinate tuple containing x and y.
+
+        Raises:
+            ValueError: If the coordinate does not contain exactly two values
+            or if either value is not an integer.
+        """
         parts = self.config[key].split(",")
         if len(parts) != 2:
             raise ValueError(f"{key} must contain exactly two values: x,y")

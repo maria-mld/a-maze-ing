@@ -1,16 +1,32 @@
+"""Shortest-path search for maze grids."""
+
 from typing import List, Tuple
 from collections import deque
 
 
 class PathFinder:
+    """Find shortest paths in a maze encoded with wall bit masks."""
+
     @staticmethod
     def solve(grid: List[List[int]],
               start: Tuple[int, int],
               end: Tuple[int, int]) -> str:
+        """Find the shortest path between two maze cells using BFS.
+
+        Args:
+            grid: Maze grid encoded as wall bit masks.
+            start: Starting coordinate.
+            end: Target coordinate.
+
+        Returns:
+            A string of ``N``, ``E``, ``S``, and ``W`` moves. Returns an empty
+            string when the coordinates are invalid or no path exists.
+        """
         height = len(grid)
         width = len(grid[0]) if height else 0
 
         def is_inside(x: int, y: int) -> bool:
+            """Return whether a coordinate is inside the current grid."""
             return 0 <= x < width and 0 <= y < height
 
         if not is_inside(*start) or not is_inside(*end):
@@ -21,6 +37,7 @@ class PathFinder:
 
         def add_if_valid(next_x: int, next_y: int,
                          next_path: str) -> None:
+            """Add an unvisited in-bounds cell to the BFS queue."""
             if not is_inside(next_x, next_y):
                 return
             if (next_x, next_y) in visited:

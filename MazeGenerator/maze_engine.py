@@ -1,3 +1,5 @@
+"""High-level orchestration for maze generation, solving, and output."""
+
 from typing import Tuple, List
 from MazeGenerator.maze_generator import PerfectMazeGen, NonPerfectMazeGen
 from MazeGenerator.path_finder import PathFinder
@@ -11,6 +13,20 @@ class MazeEngine:
     def __init__(self, width: int, height: int, entry: Tuple[int, int],
                  exit_coords: Tuple[int, int], output_file: str,
                  perfect: bool, seed: int) -> None:
+        """Initialize the maze engine and select a generator strategy.
+
+        Args:
+            width: Maze width in cells.
+            height: Maze height in cells.
+            entry: Entry cell coordinate.
+            exit_coords: Exit cell coordinate.
+            output_file: File path where the maze will be saved.
+            perfect: Whether to generate a perfect maze.
+            seed: Random seed used by the generator.
+
+        Raises:
+            ValueError: If dimensions or coordinates are invalid.
+        """
         self.width = width
         self.height = height
         self.entry = entry
@@ -31,7 +47,13 @@ class MazeEngine:
         self.writer = MazeWriter(output_file)
 
     def _validate_parameters(self) -> None:
-        """Validate size and coordinates before generation starts."""
+        """Validate size and coordinates before generation starts.
+
+        Raises:
+            ValueError: If maze dimensions are invalid, if entry or exit are
+            outside the maze, if they are equal, or if they overlap the 42
+            pattern.
+        """
         if self.width <= 0 or self.height <= 0:
             raise ValueError("Maze width and height must be positive")
         if not self._is_inside(self.entry):
@@ -50,26 +72,37 @@ class MazeEngine:
             raise ValueError("Exit coordinates cannot be on the 42 pattern")
 
     def _is_inside(self, point: Tuple[int, int]) -> bool:
-        """Return whether the coordinate is inside the maze."""
+        """Return whether a coordinate is inside the maze.
+
+        Args:
+            point: Coordinate to check.
+
+        Returns:
+            True if the coordinate is inside the maze bounds.
+        """
         x, y = point
         return 0 <= x < self.width and 0 <= y < self.height
 
     def generate(self) -> None:
-        """Executes the selected generation strategy."""
+        """Execute the selected generation strategy and store the grid."""
         self.grid = self.generator.generate(self.width, self.height, self.seed)
 
     def solve(self) -> None:
-        """Finds the shortest path using the pathfinder module."""
+        """Find and store the shortest path from entry to exit."""
         self.solution = PathFinder.solve(self.grid,
                                          self.entry, self.exit_coords)
 
     def save(self) -> None:
-        """Saves the maze using the writer."""
+        """Save the current maze grid and solution to the output file."""
         self.writer.write(self.grid, self.entry,
                           self.exit_coords, self.solution)
 
     def show(self, with_path: bool) -> None:
-        """Visualizes the maze via the new renderer."""
+        """Render the maze in the terminal.
+
+        Args:
+            with_path: Whether to draw the stored solution path.
+        """
         self.renderer.render(
             grid=self.grid,
             start=self.entry,

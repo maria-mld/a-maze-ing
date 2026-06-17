@@ -1,9 +1,12 @@
+"""Command-line entry point for the A-Maze-ing project."""
+
 import sys
 from MazeGenerator.parser import Parser
 from MazeGenerator.maze_engine import MazeEngine
 
 
 def print_menu() -> None:
+    """Print the interactive terminal menu."""
     print("\n--- Maze Generator Menu ---")
     print("g - Generate new maze")
     print("s - Show/Hide solution path")
@@ -13,6 +16,12 @@ def print_menu() -> None:
 
 
 def main() -> None:
+    """Run the maze generator from a configuration file.
+
+    The program expects exactly one command-line argument: the path to a
+    configuration file. It loads the configuration, generates and solves the
+    maze, saves the result, then starts an interactive terminal loop.
+    """
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py <path_to_config>")
         return
@@ -57,4 +66,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n Interrupted")
